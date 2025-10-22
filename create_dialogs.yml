@@ -1,0 +1,14 @@
+---
+- name: Inizializzare il dizionario per gli ID dei dialoghi
+  set_fact:
+    dialog_ids_map: {}
+
+- name: Eseguire la creazione di ogni dialogo
+  include_tasks: create_single_dialog.yml
+  loop: "{{ service_dialogs_to_create }}"
+  loop_control:
+    loop_var: dialog_item
+
+- name: Verificare che il dizionario degli ID sia stato popolato
+  debug:
+    msg: "Mappa finale degli ID dei dialoghi: {{ dialog_ids_map }}"

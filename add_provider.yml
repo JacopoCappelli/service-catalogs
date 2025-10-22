@@ -1,0 +1,62 @@
+---
+- name: Controllare se ALMENO un provider è presente in ManageIQ
+  uri:
+    # URL per interrogare l'API di ManageIQ per TUTTI i provider
+    # Rimosso il filtro per il nome del provider
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/providers?expand=resources"
+    method: GET
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: false
+    return_content: yes
+    status_code: 200
+  register: all_providers_check
+
+- name: Asserire che sia presente ALMENO un provider
+  assert:
+    # Verifica se la lista di risorse nella risposta JSON contiene ALMENO un elemento
+    that:
+      - all_providers_check.json.resources | length > 0
+    fail_msg: "NESSUN provider è stato trovato in ManageIQ. È necessario configurarne almeno uno."
+    success_msg: "Trovato almeno {{ all_providers_check.json.resources | length }} provider(s) in ManageIQ. La configurazione può procedere."
+
+- name: Identificare l'ID del provider OpenStack per il Refresh
+  set_fact:
+    # Cerchiamo il primo provider OpenStack trovato nella lista del check
+    # Assumiamo che il primo provider OpenStack (tipo CloudManager) sia quello giusto.
+    refresh_provider_id: >-
+      {{
+        (all_providers_check.json.resources
+        | selectattr('type', 'equalto', 'ManageIQ::Providers::Openstack::CloudManager')
+        | first).id
+      }}
+  when: all_providers_check.json.resources | length > 0
+  register: find_provider_id
+  ignore_errors: true # Continuiamo se non troviamo un provider OpenStack specifico
+
+- name: Avviare il Refresh del provider OpenStack tramite API
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/providers/{{ refresh_provider_id }}"
+    method: POST
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: false
+    headers:
+      Content-Type: application/json
+    body_format: json
+    # Il comando 'refresh' è quello che istruisce ManageIQ a risincronizzare le risorse.
+    body:
+      action: refresh
+    status_code: [200, 202] # 202 Accepted indica che la richiesta è stata accettata per l'elaborazione
+  when: find_provider_id is succeeded and refresh_provider_id is defined
+  register: provider_refresh_command
+
+- name: Assert - Refresh del provider avviato
+  assert:
+    that:
+      - provider_refresh_command.status in [200, 202]
+    success_msg: "Comando di Refresh inviato con successo per il provider ID {{ refresh_provider_id }}. I Flavors appariranno presto."
+    fail_msg: "Fallimento nell'avviare il Refresh per il provider."
+  when: provider_refresh_command is defined

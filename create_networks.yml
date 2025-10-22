@@ -1,0 +1,59 @@
+---
+- name: Inizializzare il dizionario degli ID delle reti
+  set_fact:
+    network_ids_map: {}
+
+- name: Eseguire la gestione di ogni rete
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2.0/networks?name={{ item.name | urlencode }}"
+    method: GET
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+    return_content: yes
+    status_code: 200
+  register: network_check
+  loop: "{{ networks_to_create }}"
+  loop_control:
+    loop_var: network_item
+
+- name: Creare le reti se non esistono
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2.0/networks"
+    method: POST
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      network:
+        name: "{{ network_item.name }}"
+        admin_state_up: true
+    status_code: 201
+  when: network_check.json.networks | length == 0
+  loop: "{{ networks_to_create }}"
+  loop_control:
+    loop_var: network_item
+  register: network_creation
+
+- name: Verificare che tutte le reti siano state gestite correttamente e salvare gli ID
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2.0/networks"
+    method: GET
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+    return_content: yes
+  register: all_networks
+
+- name: Popolare il dizionario degli ID delle reti
+  set_fact:
+    network_ids_map: "{{ network_ids_map | combine({item.name: item.id}) }}"
+  loop: "{{ all_networks.json.networks }}"
+  loop_control:
+    loop_var: item
+
+- name: Assert che la mappa degli ID delle reti sia stata popolata
+  assert:
+    that:
+      - network_ids_map is defined and network_ids_map | length > 0
+    fail_msg: "Non è stato possibile trovare o creare le reti."
+    success_msg: "La mappa degli ID delle reti è stata creata con successo: {{ network_ids_map }}"

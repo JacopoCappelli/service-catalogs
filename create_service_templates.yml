@@ -1,0 +1,14 @@
+---
+- name: Inizializzare il dizionario per gli ID dei service templates
+  set_fact:
+    template_ids_map: {}
+
+- name: Eseguire la creazione di ogni service template
+  include_tasks: create_single_service_template.yml
+  loop: "{{ service_templates_to_create }}"
+  loop_control:
+    loop_var: template_item
+
+- name: Verificare che il dizionario degli ID sia stato popolato
+  debug:
+    msg: "Mappa finale degli ID dei service templates: {{ template_ids_map }}"

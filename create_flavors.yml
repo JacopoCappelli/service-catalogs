@@ -1,0 +1,62 @@
+---
+- name: Inizializzare il dizionario degli ID dei flavors
+  set_fact:
+    flavor_ids_map: {}
+
+- name: Eseguire la gestione di ogni flavor
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2.1/flavors?name={{ item.name | urlencode }}"
+    method: GET
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+    return_content: yes
+    status_code: 200
+  register: flavor_check
+  loop: "{{ flavors_to_create }}"
+  loop_control:
+    loop_var: flavor_item
+
+- name: Creare i flavors se non esistono
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2.1/flavors"
+    method: POST
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      flavor:
+        name: "{{ flavor_item.name }}"
+        ram: "{{ flavor_item.ram }}"
+        vcpus: "{{ flavor_item.vcpus }}"
+        disk: "{{ flavor_item.disk }}"
+        os-flavor-access:is_public: "{{ flavor_item.is_public }}"
+    status_code: 200
+  when: flavor_check.json.flavors | length == 0
+  loop: "{{ flavors_to_create }}"
+  loop_control:
+    loop_var: flavor_item
+  register: flavor_creation
+
+- name: Verificare che tutti i flavors siano stati gestiti correttamente e salvare gli ID
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2.1/flavors"
+    method: GET
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+    return_content: yes
+  register: all_flavors
+
+- name: Popolare il dizionario degli ID dei flavors
+  set_fact:
+    flavor_ids_map: "{{ flavor_ids_map | combine({item.name: item.id}) }}"
+  loop: "{{ all_flavors.json.flavors }}"
+  loop_control:
+    loop_var: item
+
+- name: Assert che la mappa degli ID dei flavors sia stata popolata
+  assert:
+    that:
+      - flavor_ids_map is defined and flavor_ids_map | length > 0
+    fail_msg: "Non è stato possibile trovare o creare i flavors."
+    success_msg: "La mappa degli ID dei flavors è stata creata con successo: {{ flavor_ids_map }}"

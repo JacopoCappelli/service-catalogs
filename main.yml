@@ -1,0 +1,24 @@
+# playbook/main.yml
+# playbook/main.yml
+---
+- name: Esecuzione pipeline di configurazione ManageIQ
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Inclusione tasks - Test Connessione API con ManageIQ
+      include_tasks: check_api.yml
+
+    - name: Inclusione tasks - Creazione e verifica provider
+      include_tasks: add_provider.yml
+
+    - name: Inclusione tasks - Creazione e verifica cataloghi
+      include_tasks: create_catalogs.yml
+
+    - name: Inclusione tasks - Creazione e verifica dialoghi
+      include_tasks: create_dialogs.yml
+
+    - name: Inclusione tasks - Creazione e verifica service templates
+      include_tasks: create_service_templates.yml

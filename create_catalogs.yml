@@ -1,0 +1,14 @@
+---
+- name: Inizializzare il dizionario degli ID dei cataloghi
+  set_fact:
+    catalog_ids_map: {}
+
+- name: Eseguire la creazione di ogni catalogo
+  include_tasks: create_single_catalog.yml
+  loop: "{{ catalogs_to_create }}"
+  loop_control:
+    loop_var: catalog_item
+
+- name: Verificare che il dizionario degli ID sia stato popolato
+  debug:
+    msg: "Mappa finale degli ID dei cataloghi: {{ catalog_ids_map }}"

@@ -1,0 +1,67 @@
+---
+- name: Inizializzare il dizionario degli ID delle immagini
+  set_fact:
+    image_ids_map: {}
+
+- name: Eseguire la gestione di ogni immagine
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2/images?name={{ item.name | urlencode }}"
+    method: GET
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+    return_content: yes
+    status_code: 200
+  register: image_check
+  loop: "{{ images_to_create }}"
+  loop_control:
+    loop_var: image_item
+
+- name: Scaricare l'immagine se non esiste
+  get_url:
+    url: "{{ image_item.source }}"
+    dest: "/tmp/{{ image_item.name }}.img"
+  when: image_check.json.images | length == 0
+  loop: "{{ images_to_create }}"
+  loop_control:
+    loop_var: image_item
+
+- name: Creare le immagini se non esistono
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2/images"
+    method: POST
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+      Content-Type: "application/octet-stream"
+      X-Image-Meta-Name: "{{ image_item.name }}"
+      X-Image-Meta-Disk-Format: "{{ image_item.disk_format }}"
+      X-Image-Meta-Container-Format: "{{ image_item.container_format }}"
+    body: "{{ lookup('file', '/tmp/' + image_item.name + '.img') }}"
+    status_code: 201
+  when: image_check.json.images | length == 0
+  loop: "{{ images_to_create }}"
+  loop_control:
+    loop_var: image_item
+  register: image_creation
+
+- name: Verificare che tutte le immagini siano state gestite correttamente e salvare gli ID
+  uri:
+    url: "http://{{ provider_host }}:{{ provider_port }}/v2/images"
+    method: GET
+    headers:
+      X-Auth-Token: "{{ provider_auth_token }}"
+    return_content: yes
+  register: all_images
+
+- name: Popolare il dizionario degli ID delle immagini
+  set_fact:
+    image_ids_map: "{{ image_ids_map | combine({item.name: item.id}) }}"
+  loop: "{{ all_images.json.images }}"
+  loop_control:
+    loop_var: item
+
+- name: Assert che la mappa degli ID delle immagini sia stata popolata
+  assert:
+    that:
+      - image_ids_map is defined and image_ids_map | length > 0
+    fail_msg: "Non è stato possibile trovare o creare le immagini."
+    success_msg: "La mappa degli ID delle immagini è stata creata con successo: {{ image_ids_map }}"

@@ -1,0 +1,93 @@
+---
+# playbook/vars.yml
+
+# Dettagli di connessione per ManageIQ
+manageiq_host: "manageiq"
+manageiq_port: "3443"
+manageiq_user: "admin"
+manageiq_password: "smartvm"
+
+# Dettagli del provider
+provider_name: "DevStack"
+provider_type: "ManageIQ::Providers::Openstack::CloudManager"
+remove_existing: false
+
+# Sezione per la definizione dei service catalogs
+catalogs_to_create:
+  - name: "IaaS"
+    description: "Catalogo per servizi di Infrastructure as a Service"
+  - name: "Catalogo Sviluppo"
+    description: "Catalogo per ambienti di sviluppo"
+
+# --- NUOVA SEZIONE: Definizione dei Dialoghi di Servizio ---
+service_dialogs_to_create:
+  - name: "BlockStorageDialog"
+    description: "Richiede i parametri per un nuovo Block Storage"
+    label: "Crea Block Storage"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Volume"
+            position: 0
+            dialog_fields:
+              - name: "volume_name"
+                label: "Nome Volume"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+              - name: "volume_size"
+                label: "Dimensione (GB)"
+                type: "DialogFieldTextBox"
+                data_type: "integer"
+                required: true
+                default_value: "10"
+                position: 1
+
+  - name: "CreateVMDialog"
+    description: "Richiede i parametri per una nuova VM OpenStack"
+    label: "Crea Virtual Machine"
+    dialog_tabs:
+      - label: "Configurazione VM"
+        position: 0
+        dialog_groups:
+          - label: "Opzioni Principali"
+            position: 0
+            dialog_fields:
+              - name: "vm_name"
+                label: "Nome VM"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+              # In un caso reale, qui ci sarebbero dropdown per flavor, image, network, etc.
+              # Per semplicità, li teniamo come campi di testo.
+              - name: "flavor_name"
+                label: "Flavor (es. m1.small)"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                default_value: "m1.small"
+                position: 1
+              - name: "image_name"
+                label: "Immagine (es. RockyLinux-9-x86_64)"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                default_value: "RockyLinux-9-x86_64"
+                position: 2
+
+# --- NUOVA SEZIONE: Definizione dei Service Templates (Servizi) ---
+service_templates_to_create:
+  - name: "Block Storage"
+    description: "Crea un Block Storage"
+    prov_type: "generic" # Tipo Generico come da immagine
+    catalog_name: "IaaS"
+    dialog_name: "BlockStorageDialog"
+
+  - name: "Crea una Virtual Machine"
+    description: "Crea una Virtual Machine"
+    prov_type: "openstack" # Tipo OpenStack come da immagine
+    catalog_name: "IaaS"
+    dialog_name: "CreateVMDialog"

@@ -1,0 +1,36 @@
+---
+- name: Test 1 - Verifica accesso API root
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api"
+    method: GET
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: false
+    return_content: yes
+  register: api_root
+
+- name: Assert - Lo status deve essere 200
+  assert:
+    that:
+      - api_root.status == 200
+    fail_msg: "ManageIQ API non raggiungibile o credenziali errate"
+    success_msg: "ManageIQ API raggiungibile e credenziali corrette"
+
+- name: Test 2 - Recupero versione ManageIQ
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api?attributes=version"
+    method: GET
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: false
+    return_content: yes
+  register: api_version
+
+- name: Assert - La risposta contiene la versione
+  assert:
+    that:
+      - "'version' in api_version.json"
+    fail_msg: "Nessuna versione trovata nella risposta API"
+    success_msg: "Versione ManageIQ: {{ api_version.json.version }}"

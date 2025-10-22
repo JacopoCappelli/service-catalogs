@@ -1,0 +1,54 @@
+---
+- name: Controllare se il dialogo "{{ dialog_item.label }}" esiste
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_dialogs?expand=resources&filter[]=label='{{ dialog_item.label | urlencode }}'"
+    method: GET
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: false
+    return_content: yes
+  register: dialog_check
+
+- name: Creare il dialogo "{{ dialog_item.label }}" se non esiste
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_dialogs"
+    method: POST
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: false
+    headers:
+      Content-Type: application/json
+    body_format: json
+    body:
+      description: "{{ dialog_item.description }}"
+      label: "{{ dialog_item.label }}"
+      dialog_tabs: "{{ dialog_item.dialog_tabs }}"
+    status_code: [200, 201]
+  when: dialog_check.json.resources | length == 0
+  register: create_dialog
+
+- name: Determinare l'ID del dialogo (Esistente)
+  set_fact:
+    # Assegna l'ID dal check se il dialogo è stato trovato
+    current_dialog_id: "{{ dialog_check.json.resources[0].id }}"
+  when: dialog_check.json.resources | length > 0
+
+- name: Determinare l'ID del dialogo (Nuovo)
+  set_fact:
+    # Assegna l'ID dalla risposta POST se il dialogo è stato appena creato
+    current_dialog_id: "{{ create_dialog.json.results[0].id }}"
+  # La condizione 'changed' verifica che la creazione sia effettivamente avvenuta (POST)
+  when: create_dialog is defined and create_dialog.changed is defined and create_dialog.changed
+
+- name: Aggiungere l'ID del dialogo al dizionario
+  set_fact:
+    dialog_ids_map: "{{ dialog_ids_map | combine({ dialog_item.name: current_dialog_id }) }}"
+
+- name: Assert che il dialogo sia stato gestito correttamente e che l'ID sia stato salvato
+  assert:
+    that:
+      - current_dialog_id is defined
+    fail_msg: "Fallimento nel recuperare l'ID per il dialogo '{{ dialog_item.name }}'."
+    success_msg: "ID del dialogo '{{ dialog_item.name }}' salvato: {{ current_dialog_id }}"

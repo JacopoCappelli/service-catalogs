@@ -1,0 +1,63 @@
+---
+- name: Controllare se il service template "{{ template_item.name }}" esiste
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_templates?expand=resources&filter[]=name='{{ template_item.name | urlencode }}'"
+    method: GET
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: false
+    return_content: yes
+  register: template_check
+
+- name: Creare il Service Template "{{ template_item.name }}" se non esiste
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_templates"
+    method: POST
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: false
+    headers:
+      Content-Type: application/json
+    body_format: json
+    body:
+      name: "{{ template_item.name }}"
+      description: "{{ template_item.description }}"
+      display: true # Fondamentale per renderlo visibile (Visualizza nel catalog: True)
+      service_template_catalog_id: "{{ catalog_ids_map[template_item.catalog_name] }}"
+      prov_type: "{{ template_item.prov_type }}"
+      type: "ServiceTemplate"
+      config_info:
+        provision:
+          # Collega il dialogo al template per renderlo ordinabile
+          dialog_id: "{{ dialog_ids_map[template_item.dialog_name] }}"
+          # Aggiungere qui la logica di provisioning (es. playbook, template cloudformation, etc.)
+          # Per ora basta il dialogo per farlo apparire come nell'immagine
+    status_code: [200, 201]
+  when: template_check.json.resources | length == 0
+  register: create_template
+
+- name: Aggiungere l'ID del service template al dizionario
+  set_fact:
+    template_ids_map: >-
+      {{ template_ids_map | combine({
+        template_item.name: (
+          template_check.json.resources[0].id
+          if (template_check.json.resources | length > 0)
+          else create_template.json.results[0].id
+        )
+      }) }}
+  when: create_template is defined and create_template.json is defined and create_template.json.results is defined
+
+- name: Aggiungere l'ID del service template (metodo alternativo)
+  set_fact:
+    template_ids_map: >-
+      {{ template_ids_map | combine({
+        template_item.name: (
+          template_check.json.resources[0].id
+          if (template_check.json.resources | length > 0)
+          else create_template.json.id
+        )
+      }) }}
+  when: create_template is defined and create_template.json is defined and create_template.json.results is not defined

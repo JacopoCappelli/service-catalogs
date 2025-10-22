@@ -1,0 +1,50 @@
+---
+- name: Controllare se il catalogo "{{ catalog_item.name }}" esiste e salvarne l'ID
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_catalogs?expand=resources&filter[]=name='{{ catalog_item.name | urlencode }}'"
+    method: GET
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    return_content: yes
+  register: catalog_check
+
+- name: Creare il catalogo "{{ catalog_item.name }}" se non esiste
+  uri:
+    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_catalogs"
+    method: POST
+    user: "{{ manageiq_user }}"
+    password: "{{ manageiq_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    body_format: json
+    body:
+      name: "{{ catalog_item.name }}"
+      description: "{{ catalog_item.description }}"
+    status_code: [200, 201]
+  register: create_catalog
+  when: catalog_check.json.resources | length == 0
+
+- name: Aggiungere l'ID del catalogo al dizionario  
+  set_fact:
+    catalog_ids_map: >-
+      {{ catalog_ids_map | combine({
+        catalog_item.name: (
+          catalog_check.json.resources[0].id  
+          if (catalog_check.json.resources | length > 0)
+          else create_catalog.json.results[0].id  
+        )
+      }) }}
+
+- name: Assert che il catalogo sia stato gestito correttamente e che l'ID sia stato salvato
+  assert:
+    that:
+      - >-
+        (catalog_check.json.resources | length > 0 and (catalog_check.json.resources[0].id) is defined) or
+        (create_catalog is defined and create_catalog.json.results[0].id is defined)  
+    fail_msg: "Il catalogo '{{ catalog_item.name }}' non è stato trovato o creato."
+    success_msg: "ID del catalogo '{{ catalog_item.name }}' salvato e aggiunto al dizionario."
