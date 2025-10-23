@@ -5,7 +5,7 @@
 
 - name: Eseguire la gestione di ogni immagine
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2/images?name={{ item.name | urlencode }}"
+    url: "http://{{ ip_address_appliance }}/v2/images?name={{ item.name | urlencode }}"
     method: GET
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"
@@ -27,7 +27,7 @@
 
 - name: Creare le immagini se non esistono
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2/images"
+    url: "http://{{ ip_address_appliance }}/v2/images"
     method: POST
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"
@@ -45,7 +45,7 @@
 
 - name: Verificare che tutte le immagini siano state gestite correttamente e salvare gli ID
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2/images"
+    url: "http://{{ ip_address_appliance }}/v2/images"
     method: GET
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"

@@ -5,7 +5,7 @@
 
 - name: Eseguire la gestione di ogni rete
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2.0/networks?name={{ item.name | urlencode }}"
+    url: "http://{{ ip_address_appliance }}/v2.0/networks?name={{ item.name | urlencode }}"
     method: GET
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"
@@ -18,7 +18,7 @@
 
 - name: Creare le reti se non esistono
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2.0/networks"
+    url: "http://{{ ip_address_appliance }}/v2.0/networks"
     method: POST
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"
@@ -37,7 +37,7 @@
 
 - name: Verificare che tutte le reti siano state gestite correttamente e salvare gli ID
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2.0/networks"
+    url: "http://{{ ip_address_appliance }}/v2.0/networks"
     method: GET
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"

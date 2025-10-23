@@ -1,7 +1,7 @@
 ---
 - name: Controllare se il service template "{{ template_item.name }}" esiste
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_templates?expand=resources&filter[]=name='{{ template_item.name | urlencode }}'"
+    url: "https://{{ ip_address_appliance }}/api/service_templates?expand=resources&filter[]=name='{{ template_item.name | urlencode }}'"
     method: GET
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"
@@ -12,7 +12,7 @@
 
 - name: Creare il Service Template "{{ template_item.name }}" se non esiste
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_templates"
+    url: "https://{{ ip_address_appliance }}/api/service_templates"
     method: POST
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"

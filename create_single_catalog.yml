@@ -1,7 +1,7 @@
 ---
 - name: Controllare se il catalogo "{{ catalog_item.name }}" esiste e salvarne l'ID
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_catalogs?expand=resources&filter[]=name='{{ catalog_item.name | urlencode }}'"
+    url: "https://{{ ip_address_appliance }}/api/service_catalogs?expand=resources&filter[]=name='{{ catalog_item.name | urlencode }}'"
     method: GET
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"
@@ -12,7 +12,7 @@
 
 - name: Creare il catalogo "{{ catalog_item.name }}" se non esiste
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_catalogs"
+    url: "https://{{ ip_address_appliance }}/api/service_catalogs"
     method: POST
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"

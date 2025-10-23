@@ -1,7 +1,7 @@
 ---
 - name: Test 1 - Verifica accesso API root
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api"
+    url: "https://{{ ip_address_appliance }}/api"
     method: GET
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"
@@ -19,7 +19,7 @@
 
 - name: Test 2 - Recupero versione ManageIQ
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api?attributes=version"
+    url: "https://{{ ip_address_appliance }}/api?attributes=version"
     method: GET
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"

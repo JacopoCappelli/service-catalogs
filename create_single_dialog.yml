@@ -1,7 +1,7 @@
 ---
 - name: Controllare se il dialogo "{{ dialog_item.label }}" esiste
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_dialogs?expand=resources&filter[]=label='{{ dialog_item.label | urlencode }}'"
+    url: "https://{{ ip_address_appliance }}/api/service_dialogs?expand=resources&filter[]=label='{{ dialog_item.label | urlencode }}'"
     method: GET
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"
@@ -12,7 +12,7 @@
 
 - name: Creare il dialogo "{{ dialog_item.label }}" se non esiste
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/service_dialogs"
+    url: "https://{{ ip_address_appliance }}/api/service_dialogs"
     method: POST
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"

@@ -3,9 +3,10 @@
 
 # Dettagli di connessione per ManageIQ
 manageiq_host: "manageiq"
-manageiq_port: "3443"
+#manageiq_port: "3443"
 manageiq_user: "admin"
 manageiq_password: "smartvm"
+ip_address_appliance: 172.16.0.174
 
 # Dettagli del provider
 provider_name: "DevStack"

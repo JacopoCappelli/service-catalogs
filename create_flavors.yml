@@ -5,7 +5,7 @@
 
 - name: Eseguire la gestione di ogni flavor
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2.1/flavors?name={{ item.name | urlencode }}"
+    url: "http://{{ ip_address_appliance }}/v2.1/flavors?name={{ item.name | urlencode }}"
     method: GET
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"
@@ -18,7 +18,7 @@
 
 - name: Creare i flavors se non esistono
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2.1/flavors"
+    url: "http://{{ ip_address_appliance }}/v2.1/flavors"
     method: POST
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"
@@ -40,7 +40,7 @@
 
 - name: Verificare che tutti i flavors siano stati gestiti correttamente e salvare gli ID
   uri:
-    url: "http://{{ provider_host }}:{{ provider_port }}/v2.1/flavors"
+    url: "http://{{ ip_address_appliance }}/v2.1/flavors"
     method: GET
     headers:
       X-Auth-Token: "{{ provider_auth_token }}"

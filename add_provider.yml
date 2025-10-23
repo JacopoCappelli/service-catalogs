@@ -3,7 +3,7 @@
   uri:
     # URL per interrogare l'API di ManageIQ per TUTTI i provider
     # Rimosso il filtro per il nome del provider
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/providers?expand=resources"
+    url: "https://{{ ip_address_appliance }}/api/providers?expand=resources"
     method: GET
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"
@@ -37,7 +37,7 @@
 
 - name: Avviare il Refresh del provider OpenStack tramite API
   uri:
-    url: "https://{{ manageiq_host }}:{{ manageiq_port }}/api/providers/{{ refresh_provider_id }}"
+    url: "https://{{ ip_address_appliance }}/api/providers/{{ refresh_provider_id }}"
     method: POST
     user: "{{ manageiq_user }}"
     password: "{{ manageiq_password }}"
