@@ -1,0 +1,12 @@
+---
+
+  - name: Chiamata API per creare VM
+    uri:
+      url: "https://{{ip_address_appliance}}/v1/vms"
+      method: POST
+      user: "{{ manageiq_user }}"
+      password: "{{ manageiq_password }}"
+      body_format: json
+      body:
+      
+      status_code: 201

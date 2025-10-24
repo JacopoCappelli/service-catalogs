@@ -7,7 +7,8 @@ manageiq_host: "manageiq"
 manageiq_user: "admin"
 manageiq_password: "smartvm"
 ip_address_appliance: 172.16.0.174
-
+collections:
+   - manageiq.automate
 # Dettagli del provider
 provider_name: "DevStack"
 provider_type: "ManageIQ::Providers::Openstack::CloudManager"
@@ -17,8 +18,8 @@ remove_existing: false
 catalogs_to_create:
   - name: "IaaS"
     description: "Catalogo per servizi di Infrastructure as a Service"
-  - name: "Catalogo Sviluppo"
-    description: "Catalogo per ambienti di sviluppo"
+  - name: "frigorifero"
+    description: "Catalogo per il resto dei servizi"
 
 # --- NUOVA SEZIONE: Definizione dei Dialoghi di Servizio ---
 service_dialogs_to_create:
@@ -35,16 +36,60 @@ service_dialogs_to_create:
               - name: "volume_name"
                 label: "Nome Volume"
                 type: "DialogFieldTextBox"
-                data_type: "string"
                 required: true
                 position: 0
+
+              - name: "volume_description"
+                label: "Descrizione"
+                type: "DialogFieldTextBox"
+                required: false
+                position: 1
+
               - name: "volume_size"
                 label: "Dimensione (GB)"
                 type: "DialogFieldTextBox"
                 data_type: "integer"
                 required: true
                 default_value: "10"
-                position: 1
+                position: 2
+
+              - name: "cloud_tenant"
+                label: "Cloud Tenant"
+                type: "DialogFieldDropDownList"   
+                default_value: "tenant"
+                required: true
+                position: 3
+                values:
+                  - ["tenant-1", "Tenant Produzione"]
+                  - ["tenant-2", "Tenant Sviluppo"]
+
+              - name: "volume_availability"
+                label: "Zona Disponibile"
+                type: "DialogFieldDropDownList"   
+                data_type: "string"              
+                required: true
+                default_value: "nova"            
+                position: 4
+                values:
+                  - ["nova", "Nova (default)"]
+                  - ["zone-1", "Zona 1"]
+                  - ["zone-2", "Zona 2"]
+
+              - name: "volume_cloud_kind"
+                label: "Tipo di volume Cloud"
+                type: "DialogFieldDropDownList"   
+                data_type: "string"              
+                required: true
+                default_value: "default"            
+                position: 5
+                values:
+                  - ["tipo-1"]
+                  - ["tipo-2"]
+
+            
+
+ 
+
 
   - name: "CreateVMDialog"
     description: "Richiede i parametri per una nuova VM OpenStack"
@@ -53,32 +98,162 @@ service_dialogs_to_create:
       - label: "Configurazione VM"
         position: 0
         dialog_groups:
-          - label: "Opzioni Principali"
+          - label: "Identità"
             position: 0
             dialog_fields:
               - name: "vm_name"
                 label: "Nome VM"
                 type: "DialogFieldTextBox"
+                required: true
+                position: 0
+
+          - label: "Progetto"
+            position: 1
+            dialog_fields:
+              - name: "project_field"
+                label: "Tipo di Progetto"
+                type: "DialogFieldDropDownList"
+                position: 0
+
+            
+      
+
+  - name: "Nginx_Service_Dialog"
+    description: "Richiede i parametri per un Server Nginx"
+    label: "Crea Server Nginx"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Servizio"
+            position: 0
+            dialog_fields:
+              - name: "service_name"
+                label: "Nome Servizio"
+                type: "DialogFieldTextBox"
                 data_type: "string"
                 required: true
                 position: 0
-              # In un caso reale, qui ci sarebbero dropdown per flavor, image, network, etc.
-              # Per semplicità, li teniamo come campi di testo.
-              - name: "flavor_name"
-                label: "Flavor (es. m1.small)"
-                type: "DialogFieldTextBox"
-                data_type: "string"
-                required: true
-                default_value: "m1.small"
-                position: 1
-              - name: "image_name"
-                label: "Immagine (es. RockyLinux-9-x86_64)"
-                type: "DialogFieldTextBox"
-                data_type: "string"
-                required: true
-                default_value: "RockyLinux-9-x86_64"
-                position: 2
 
+  - name: "GitLab_Service_Dialog"
+    description: "Richiede i parametri per un Server GitLab"
+    label: "Crea Server GitLab"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Servizio"
+            position: 0
+            dialog_fields:
+              - name: "service_name"
+                label: "Nome Servizio"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+
+  - name: "Jenkins_Service_Dialog"
+    description: "Richiede i parametri per un Server Jenkins"
+    label: "Crea Server Jenkins"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Servizio"
+            position: 0
+            dialog_fields:
+              - name: "service_name"
+                label: "Nome Servizio"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+
+  - name: "MinIO_Service_Dialog"
+    description: "Richiede i parametri per un Server MinIO"
+    label: "Crea Server MinIO"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Servizio"
+            position: 0
+            dialog_fields:
+              - name: "service_name"
+                label: "Nome Servizio"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+
+  - name: "MySQL_Service_Dialog"
+    description: "Richiede i parametri per un Server MySQL"
+    label: "Crea Server MySQL"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Servizio"
+            position: 0
+            dialog_fields:
+              - name: "service_name"
+                label: "Nome Servizio"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+
+  - name: "Nextcloud_Service_Dialog"
+    description: "Richiede i parametri per un Server Nextcloud"
+    label: "Crea Server Nextcloud"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Servizio"
+            position: 0
+            dialog_fields:
+              - name: "service_name"
+                label: "Nome Servizio"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+
+  - name: "PostgreSQL_Service_Dialog"
+    description: "Richiede i parametri per un Server PostgreSQL"
+    label: "Crea Server PostgreSQL"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Servizio"
+            position: 0
+            dialog_fields:
+              - name: "service_name"
+                label: "Nome Servizio"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+
+  - name: "Wordpress_Service_Dialog"
+    description: "Richiede i parametri per un Server WordPress"
+    label: "Crea Server WordPress"
+    dialog_tabs:
+      - label: "Informazioni di base"
+        position: 0
+        dialog_groups:
+          - label: "Dettagli Servizio"
+            position: 0
+            dialog_fields:
+              - name: "service_name"
+                label: "Nome Servizio"
+                type: "DialogFieldTextBox"
+                data_type: "string"
+                required: true
+                position: 0
+                
 # --- NUOVA SEZIONE: Definizione dei Service Templates (Servizi) ---
 service_templates_to_create:
   - name: "Block Storage"
@@ -92,3 +267,57 @@ service_templates_to_create:
     prov_type: "openstack" # Tipo OpenStack come da immagine
     catalog_name: "IaaS"
     dialog_name: "CreateVMDialog"
+
+  - name: "Apache Web Server"
+    description: "Apache Web Server"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "Nginx_Service_Dialog" # Nello screenshot usa questo dialog
+
+  - name: "Server GitLab"
+    description: "Server GitLab"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "GitLab_Service_Dialog"
+
+  - name: "Server Jenkins"
+    description: "Server Jenkins"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "Jenkins_Service_Dialog"
+
+  - name: "Server MinIO"
+    description: "Server MinIO"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "MinIO_Service_Dialog"
+
+  - name: "Server MySQL"
+    description: "Server MySQL"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "MySQL_Service_Dialog"
+
+  - name: "Server Nextcloud"
+    description: "Server Nextcloud"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "Nextcloud_Service_Dialog"
+
+  - name: "Server Nginx"
+    description: "Server Nginx"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "Nginx_Service_Dialog"
+
+  - name: "Server PostgreSQL"
+    description: "Server PostgreSQL"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "PostgreSQL_Service_Dialog"
+
+  - name: "Server WordPress"
+    description: "Server WordPress"
+    prov_type: "generic"
+    catalog_name: "Altri Servizi"
+    dialog_name: "Wordpress_Service_Dialog"
