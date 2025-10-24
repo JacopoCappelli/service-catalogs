@@ -115,7 +115,83 @@ service_dialogs_to_create:
                 type: "DialogFieldDropDownList"
                 position: 0
 
-            
+              - name: "project_availability"
+                label: "Zona Disponibile"
+                type: "DialogFieldDropDownList"
+                position: 1
+        
+          - label: "Immagine e dimensione"
+            position: 2 
+            dialog_fields:
+              - name: "image"
+                label: "Immagine"
+                type: "DialogFieldDropDownList"
+                position: 0
+                values:
+                 - ["1","Centos-Stream-10"]
+                 - ["2",Rocky-10"]
+                 - ["3","debian-10"]
+                 - ["4","ubuntu 24.04"]
+                 - ["5","windows2012"]
+
+
+              - name: "flavors"
+                label: "Configurazioni"
+                type: "DialogFieldDropDownList"
+                position: 1
+                values:
+                 - ["1",Large - 4vCPU, 16GB RAM, 100GB vHD"]
+                 - ["2",large-1 - 4vCPU, 16GB RAM, 100GB vHD"]
+                 - ["3",large-2 - 8vCPU, 32GB RAM, 200GB vHD"]
+                 - ["4",medium - 4vCPU, 4GB RAM, 20GB vHD"]
+                 - ["5",medium-1 - 2vCPU, 8GB RAM, 60GB vHD"]
+                 - ["6",medium-2 - 4vCPU, 8GB RAM, 80GB vHD"]
+                 - ["7",small-1 - 1vCPU, 2GB RAM, 20GB vHD"]
+                 - ["8",small-2 - 2vCPU, 4GB RAM, 40GB vHD"]
+                 - ["9",xlarge-1 - 16vCPU, 64GB RAM, 400GB vHD"]
+                 - ["10",xlarge-2 - 32vCPU, 128GB RAM, 800GB vHD"]
+          
+          - label: "Rete e Sicurezza"
+            position: 3 
+            dialog_fields:
+              
+              - name: "network"
+                label: "Rete"
+                type: "DialogFieldDropDownList"
+                position: 0 
+                values:
+                 - ["ext","external-vlan20"]
+
+              - name: "subnet"
+                label: "Sottorete"
+                type: "DialogFieldDropDownList"
+                position: 1
+                values:
+                 - ["ext_sub","external-subnet20 - 5.9.220.160/27"]
+
+              - name: "security_groups"
+                label: "Gruppi di Sicurezza"
+                type: "DialogFieldDropDownList"
+                position: 2
+                
+
+              - name: "key_pair"
+                label: "Coppia di chiavi (SSH)"
+                type: "DialogFieldDropDownList"
+                position: 3
+
+          - label: "Personalizzazione"
+            position: 4
+            dialog_fields:
+              - name: "root_password"
+                label: "Password di root" 
+                type: "DialogFieldTextBox"  
+                position: 0            
+
+
+
+
+                 
       
 
   - name: "Nginx_Service_Dialog"
