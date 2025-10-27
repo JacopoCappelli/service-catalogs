@@ -18,8 +18,11 @@ remove_existing: false
 catalogs_to_create:
   - name: "IaaS"
     description: "Catalogo per servizi di Infrastructure as a Service"
-  - name: "frigorifero"
-    description: "Catalogo per il resto dei servizi"
+  - name: "Altri Servizi"
+    description: "Catalogo dei vari servizi"
+  - name: "Servizi extra"
+    description: "Catalogo per servizi aggiuntivi"
+
 
 # --- NUOVA SEZIONE: Definizione dei Dialoghi di Servizio ---
 service_dialogs_to_create:
@@ -201,7 +204,8 @@ service_dialogs_to_create:
               - name: "root_password"
                 label: "Password di root" 
                 type: "DialogFieldTextBox"  
-                position: 0            
+                position: 0    
+
 
   - name: "Nginx_Service_Dialog"
     description: "Richiede i parametri per un Server Nginx"
@@ -221,28 +225,28 @@ service_dialogs_to_create:
               - name: "tls_ssl"
                 label: "TLS/SSL?"
                 type: "DialogFieldCheckBox"
-                default_value: true # Selezionato nello screenshot
+                default_value: true 
                 position: 1
               - name: "web_root_dir"
                 label: "Web root Directory"
                 type: "DialogFieldTextBox"
-                required: false # Non obbligatorio
+                required: false 
                 position: 2
 
   - name: "GitLab_Service_Dialog"
     description: "Richiede i parametri per un Server GitLab"
-    label: "Crea Server GitLab" #
+    label: "Crea Server GitLab" 
     dialog_tabs:
-      - label: "Input" # Modificato da "Informazioni di base"
+      - label: "Input" 
         position: 0
         dialog_groups:
-          - label: "Configurazione GitLab" # Modificato da "Dettagli Servizio"
+          - label: "Configurazione GitLab" 
             position: 0
             dialog_fields:
               - name: "gitlab_root_password"
                 label: "GitLab root Password"
                 type: "DialogFieldTextBox"
-                options: {protected: true} # Password mascherata
+                options: {protected: true} 
                 required: true
                 position: 0
               - name: "fqdn"
@@ -270,7 +274,7 @@ service_dialogs_to_create:
               - name: "smtp_password"
                 label: "SMTP Password"
                 type: "DialogFieldTextBox"
-                options: {protected: true} # Password mascherata
+                options: {protected: true} 
                 required: true
                 position: 5
               - name: "tls_ssl"
@@ -297,12 +301,12 @@ service_dialogs_to_create:
               - name: "jenkins_admin_password"
                 label: "Jenkins admin Password"
                 type: "DialogFieldTextBox"
-                options: {protected: true} # Password mascherata
+                options: {protected: true} 
                 required: true
                 position: 1
               - name: "initial_plugin_list"
                 label: "Initial Plugin List"
-                type: "DialogFieldTextAreaBox" # Campo grande
+                type: "DialogFieldTextAreaBox" 
                 required: false
                 position: 2
               - name: "git_repo_url"
@@ -329,13 +333,13 @@ service_dialogs_to_create:
               - name: "minio_root_password"
                 label: "MinIO root password"
                 type: "DialogFieldTextBox"
-                options: {protected: true} # Password mascherata
+                options: {protected: true} 
                 required: true
                 position: 1
               - name: "minio_secret_key"
                 label: "MinIO secret key"
-                type: "DialogFieldTextAreaBox" # Campo grande
-                options: {protected: true} # Password mascherata
+                type: "DialogFieldTextAreaBox" 
+                options: {protected: true}
                 required: true
                 position: 2
               - name: "bucket_name"
@@ -373,7 +377,7 @@ service_dialogs_to_create:
               - name: "db_password"
                 label: "Database Password"
                 type: "DialogFieldTextBox"
-                options: {protected: true} # Password mascherata
+                options: {protected: true} 
                 required: false
                 position: 3
 
@@ -565,3 +569,33 @@ service_templates_to_create:
     prov_type: "generic"
     catalog_name: "Altri Servizi"
     dialog_name: "Wordpress_Service_Dialog"
+
+  - name: Crea macchina virtuale su OpenStack con utente personalizzato
+    openstack.cloud.server:
+      name: "{{ vm_name }}"
+      image: "{{ image }}"
+      flavor: "{{ flavors }}"
+      network: "{{ network }}"
+      security_groups: "{{ security_groups | default(['default']) }}"
+      key_name: "{{ public_key | default(omit) }}"
+      userdata: |
+        #cloud-config
+        users:
+          - name: "{{ user_name }}"
+            groups: sudo
+            shell: /bin/bash
+            sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+            lock_passwd: false
+            passwd: "{{ password | password_hash('sha512') }}"
+        chpasswd:
+          expire: false
+        # Opzionale: imposta la password di root
+        {% if root_password is defined and root_password | length > 0 %}
+        system_info:
+          default_user:
+            name: root
+            passwd: "{{ root_password | password_hash('sha512') }}"
+        {% endif %}
+      state: present
+      wait: true
+    no_log: true 
