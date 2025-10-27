@@ -95,11 +95,26 @@ service_dialogs_to_create:
     description: "Richiede i parametri per una nuova VM OpenStack"
     label: "Crea Virtual Machine"
     dialog_tabs:
-      - label: "Configurazione VM"
+      - label: "Configura la VM"
         position: 0
         dialog_groups:
-          - label: "Identità"
+          - label: "Autenticazione"
             position: 0
+            dialog_fields:
+             - name: "user_name"
+               label: "Nome Utente"
+               type: "DialogFieldTextBox"
+               required: true
+               position: 0 
+         
+             - name: "password"
+               label: "Password"
+               type: "DialogFieldTextBox"
+               required: true
+               position: 1
+
+          - label: "Identità"
+            position: 1
             dialog_fields:
               - name: "vm_name"
                 label: "Nome VM"
@@ -108,7 +123,7 @@ service_dialogs_to_create:
                 position: 0
 
           - label: "Progetto"
-            position: 1
+            position: 2
             dialog_fields:
               - name: "project_field"
                 label: "Tipo di Progetto"
@@ -121,7 +136,7 @@ service_dialogs_to_create:
                 position: 1
         
           - label: "Immagine e dimensione"
-            position: 2 
+            position: 3
             dialog_fields:
               - name: "image"
                 label: "Immagine"
@@ -152,7 +167,7 @@ service_dialogs_to_create:
                  - ["10",xlarge-2 - 32vCPU, 128GB RAM, 800GB vHD"]
           
           - label: "Rete e Sicurezza"
-            position: 3 
+            position: 4
             dialog_fields:
               
               - name: "network"
@@ -175,161 +190,312 @@ service_dialogs_to_create:
                 position: 2
                 
 
-              - name: "key_pair"
-                label: "Coppia di chiavi (SSH)"
-                type: "DialogFieldDropDownList"
+              - name: "public_key"
+                label: "Chiave pubblica (SSH)"
+                type: "DialogFieldTextBox"
                 position: 3
 
           - label: "Personalizzazione"
-            position: 4
+            position: 5
             dialog_fields:
               - name: "root_password"
                 label: "Password di root" 
                 type: "DialogFieldTextBox"  
                 position: 0            
 
-
-
-
-                 
-      
-
   - name: "Nginx_Service_Dialog"
     description: "Richiede i parametri per un Server Nginx"
-    label: "Crea Server Nginx"
+    label: "Crea Server Nginx" #
     dialog_tabs:
-      - label: "Informazioni di base"
+      - label: "Input"
         position: 0
         dialog_groups:
-          - label: "Dettagli Servizio"
+          - label: "Configurazione Web Server"
             position: 0
             dialog_fields:
-              - name: "service_name"
-                label: "Nome Servizio"
+              - name: "fqdn"
+                label: "FQDN"
                 type: "DialogFieldTextBox"
-                data_type: "string"
                 required: true
                 position: 0
+              - name: "tls_ssl"
+                label: "TLS/SSL?"
+                type: "DialogFieldCheckBox"
+                default_value: true # Selezionato nello screenshot
+                position: 1
+              - name: "web_root_dir"
+                label: "Web root Directory"
+                type: "DialogFieldTextBox"
+                required: false # Non obbligatorio
+                position: 2
 
   - name: "GitLab_Service_Dialog"
     description: "Richiede i parametri per un Server GitLab"
-    label: "Crea Server GitLab"
+    label: "Crea Server GitLab" #
     dialog_tabs:
-      - label: "Informazioni di base"
+      - label: "Input" # Modificato da "Informazioni di base"
         position: 0
         dialog_groups:
-          - label: "Dettagli Servizio"
+          - label: "Configurazione GitLab" # Modificato da "Dettagli Servizio"
             position: 0
             dialog_fields:
-              - name: "service_name"
-                label: "Nome Servizio"
+              - name: "gitlab_root_password"
+                label: "GitLab root Password"
                 type: "DialogFieldTextBox"
-                data_type: "string"
+                options: {protected: true} # Password mascherata
                 required: true
                 position: 0
+              - name: "fqdn"
+                label: "FQDN"
+                type: "DialogFieldTextBox"
+                required: true
+                position: 1
+              - name: "smtp_server"
+                label: "SMTP Server"
+                type: "DialogFieldTextBox"
+                required: true
+                position: 2
+              - name: "smtp_port"
+                label: "SMTP Port"
+                type: "DialogFieldTextBox"
+                data_type: "integer"
+                default_value: "0"
+                required: false
+                position: 3
+              - name: "smtp_username"
+                label: "SMTP Username"
+                type: "DialogFieldTextBox"
+                required: true
+                position: 4
+              - name: "smtp_password"
+                label: "SMTP Password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: true
+                position: 5
+              - name: "tls_ssl"
+                label: "TLS/SSL?"
+                type: "DialogFieldCheckBox"
+                default_value: false
+                position: 6
 
   - name: "Jenkins_Service_Dialog"
     description: "Richiede i parametri per un Server Jenkins"
-    label: "Crea Server Jenkins"
+    label: "Crea Server Jenkins" #
     dialog_tabs:
-      - label: "Informazioni di base"
+      - label: "Input"
         position: 0
         dialog_groups:
-          - label: "Dettagli Servizio"
+          - label: "Configurazione Jenkins"
             position: 0
             dialog_fields:
-              - name: "service_name"
-                label: "Nome Servizio"
+              - name: "jenkins_admin_username"
+                label: "Jenkins admin Username"
                 type: "DialogFieldTextBox"
-                data_type: "string"
                 required: true
                 position: 0
+              - name: "jenkins_admin_password"
+                label: "Jenkins admin Password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: true
+                position: 1
+              - name: "initial_plugin_list"
+                label: "Initial Plugin List"
+                type: "DialogFieldTextAreaBox" # Campo grande
+                required: false
+                position: 2
+              - name: "git_repo_url"
+                label: "Git Repository URL"
+                type: "DialogFieldTextBox"
+                required: false
+                position: 3
 
   - name: "MinIO_Service_Dialog"
     description: "Richiede i parametri per un Server MinIO"
-    label: "Crea Server MinIO"
+    label: "Crea Server MinIO" #
     dialog_tabs:
-      - label: "Informazioni di base"
+      - label: "Input"
         position: 0
         dialog_groups:
-          - label: "Dettagli Servizio"
+          - label: "Configurazione MinIO"
             position: 0
             dialog_fields:
-              - name: "service_name"
-                label: "Nome Servizio"
+              - name: "minio_root_user"
+                label: "MinIO root user"
                 type: "DialogFieldTextBox"
-                data_type: "string"
                 required: true
                 position: 0
+              - name: "minio_root_password"
+                label: "MinIO root password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: true
+                position: 1
+              - name: "minio_secret_key"
+                label: "MinIO secret key"
+                type: "DialogFieldTextAreaBox" # Campo grande
+                options: {protected: true} # Password mascherata
+                required: true
+                position: 2
+              - name: "bucket_name"
+                label: "Bucket name"
+                type: "DialogFieldTextBox"
+                required: false
+                position: 3
 
   - name: "MySQL_Service_Dialog"
     description: "Richiede i parametri per un Server MySQL"
-    label: "Crea Server MySQL"
+    label: "Crea Server MySQL" #
     dialog_tabs:
-      - label: "Informazioni di base"
+      - label: "Input"
         position: 0
         dialog_groups:
-          - label: "Dettagli Servizio"
+          - label: "Configurazione MySQL"
             position: 0
             dialog_fields:
-              - name: "service_name"
-                label: "Nome Servizio"
+              - name: "mysql_root_password"
+                label: "MySQL root Password"
                 type: "DialogFieldTextBox"
-                data_type: "string"
+                options: {protected: true} # Password mascherata
                 required: true
                 position: 0
+              - name: "db_name"
+                label: "Database Name"
+                type: "DialogFieldTextBox"
+                required: true
+                position: 1
+              - name: "db_user"
+                label: "Database User"
+                type: "DialogFieldTextBox"
+                required: false
+                position: 2
+              - name: "db_password"
+                label: "Database Password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: false
+                position: 3
 
   - name: "Nextcloud_Service_Dialog"
     description: "Richiede i parametri per un Server Nextcloud"
-    label: "Crea Server Nextcloud"
+    label: "Crea Server Nextcloud" #
     dialog_tabs:
-      - label: "Informazioni di base"
+      - label: "Input"
         position: 0
         dialog_groups:
-          - label: "Dettagli Servizio"
+          - label: "Configurazione Nextcloud"
             position: 0
             dialog_fields:
-              - name: "service_name"
-                label: "Nome Servizio"
+              - name: "nextcloud_admin_username"
+                label: "Nextcloud admin Username"
                 type: "DialogFieldTextBox"
-                data_type: "string"
                 required: true
                 position: 0
+              - name: "nextcloud_admin_password"
+                label: "Nextcloud admin Password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: true
+                position: 1
+              - name: "external_storage_config"
+                label: "External Storage Config"
+                type: "DialogFieldTextAreaBox" # Campo grande
+                required: false
+                position: 2
 
   - name: "PostgreSQL_Service_Dialog"
     description: "Richiede i parametri per un Server PostgreSQL"
-    label: "Crea Server PostgreSQL"
+    label: "Crea Server PostgreSQL" #
     dialog_tabs:
-      - label: "Informazioni di base"
+      - label: "Input"
         position: 0
         dialog_groups:
-          - label: "Dettagli Servizio"
+          - label: "Configurazione Database"
             position: 0
             dialog_fields:
-              - name: "service_name"
-                label: "Nome Servizio"
+              - name: "psql_superuser_password"
+                label: "PostgreSQL Superuser Password"
                 type: "DialogFieldTextBox"
-                data_type: "string"
+                options: {protected: true} # Password mascherata
                 required: true
                 position: 0
+              - name: "db_name"
+                label: "Database Name"
+                type: "DialogFieldTextBox"
+                required: true
+                position: 1
+              - name: "db_user"
+                label: "Database User"
+                type: "DialogFieldTextBox"
+                required: true
+                position: 2
+              - name: "db_password"
+                label: "Database Password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: true
+                position: 3
 
   - name: "Wordpress_Service_Dialog"
     description: "Richiede i parametri per un Server WordPress"
-    label: "Crea Server WordPress"
+    label: "Crea Server WordPress" #
     dialog_tabs:
-      - label: "Informazioni di base"
+      - label: "Input"
         position: 0
         dialog_groups:
-          - label: "Dettagli Servizio"
+          - label: "Configurazione WordPress"
             position: 0
             dialog_fields:
-              - name: "service_name"
-                label: "Nome Servizio"
+              - name: "wp_admin_username"
+                label: "WordPress admin Username"
                 type: "DialogFieldTextBox"
-                data_type: "string"
                 required: true
                 position: 0
-                
+              - name: "wp_admin_password"
+                label: "WordPress admin Password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: true
+                position: 1
+              - name: "wp_site_title"
+                label: "WordPress Site Title"
+                type: "DialogFieldTextBox"
+                required: true
+                position: 2
+              - name: "mysql_root_password"
+                label: "MySQL root Password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: true
+                position: 3
+              - name: "mysql_db_name"
+                label: "MySQL Database Name"
+                type: "DialogFieldTextBox"
+                required: false
+                position: 4
+              - name: "mysql_db_user"
+                label: "MySQL Database User"
+                type: "DialogFieldTextBox"
+                required: true
+                position: 5
+              - name: "mysql_db_password"
+                label: "MySQL Database Password"
+                type: "DialogFieldTextBox"
+                options: {protected: true} # Password mascherata
+                required: false
+                position: 6
+
+# --- Il resto del file è invariato ---
+
+icons_to_upload: 
+  - name: "Nginx_Icon"
+    filename: "Nginx.png"
+    local_path: "icons/Nginx.png"
+  
+  - name: "Nextcloud_Icon"
+    filename: "Nextcloud.png"
+    local_path: "icons/Nextcloud.png"
 # --- NUOVA SEZIONE: Definizione dei Service Templates (Servizi) ---
 service_templates_to_create:
   - name: "Block Storage"
@@ -349,6 +515,7 @@ service_templates_to_create:
     prov_type: "generic"
     catalog_name: "Altri Servizi"
     dialog_name: "Nginx_Service_Dialog" # Nello screenshot usa questo dialog
+    picture_name: "Nginx_Icon"
 
   - name: "Server GitLab"
     description: "Server GitLab"
@@ -379,6 +546,7 @@ service_templates_to_create:
     prov_type: "generic"
     catalog_name: "Altri Servizi"
     dialog_name: "Nextcloud_Service_Dialog"
+    picture_name: "Nextcloud_Icon"
 
   - name: "Server Nginx"
     description: "Server Nginx"
